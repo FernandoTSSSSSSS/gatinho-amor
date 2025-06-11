@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+  <title>Batalha Final - Gatinho 🐱💥</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      background: linear-gradient(135deg, #ffb6ce, #ff66b2);
+      overflow: hidden;
+      font-family: 'Courier New', monospace;
+      user-select: none;
+      touch-action: manipulation;
+    }
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background: #551144;
+      image-rendering: pixelated;
+      border: 4px solid #ff66b2;
+      border-radius: 12px;
+      box-shadow: 0 0 20px #ff66b2aa;
+    }
+    #controls {
+      position: fixed;
+      bottom: 15px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 20px;
+      z-index: 100;
+    }
+    button.control-btn {
+      width: 70px;
+      height: 70px;
+      border-radius: 50%;
+      border: none;
+      background: #ff66b2cc;
+      color: white;
+      font-size: 32px;
+      font-weight: bold;
+      box-shadow: 0 0 15px #ff66b2cc;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      touch-action: manipulation;
+      transition: background-color 0.2s ease;
+    }
+    button.control-btn:active {
+      background: #ff3380cc;
+    }
+    #message {
+      position: absolute;
+      top: 40%;
+      width: 100%;
+      text-align: center;
+      font-size: 32px;
+      color: #fff;
+      animation: fade 2s ease-in-out infinite alternate;
+      display: none;
+      z-index: 300;
+    }
+    #rewardBtn {
+      position: absolute;
+      top: 55%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 24px;
+      padding: 12px 30px;
+      background: #ff66b2;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      cursor: pointer;
+      display: none;
+      box-shadow: 0 0 15px #ff66b2aa;
+      transition: background-color 0.3s ease;
+      z-index: 300;
+    }
+    #rewardBtn:hover {
+      background: #ff3380;
+    }
+    @keyframes fade {
+      0% {opacity: 0;}
+      100% {opacity: 1;}
+    }
+
+    /* Tela de introdução */
+    #introScreen {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: linear-gradient(135deg, #ffb6ce, #ff66b2);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 500;
+      color: white;
+      font-size: 28px;
+      text-align: center;
+      padding: 20px;
+      animation: introFadeIn 1.5s ease forwards;
+    }
+    #introScreen img {
+      max-width: 80%;
+      max-height: 40%;
+      margin-bottom: 30px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px #ff66b2aa;
+      animation: introImagePulse 2s ease-in-out infinite alternate;
+    }
+    #introScreen p {
+      max-width: 90%;
+      line-height: 1.4;
+      font-weight: bold;
+      text-shadow: 0 0 8px #ff66b2cc;
+      animation: introTextPulse 2s ease-in-out infinite alternate;
+    }
+    #startButton {
+      margin-top: 40px;
+      padding: 12px 30px;
+      font-size: 22px;
+      background: #ff66b2;
+      border: none;
+      border-radius: 10px;
+      color: white;
+      cursor: pointer;
+      box-shadow: 0 0 15px #ff66b2aa;
+      transition: background-color 0.3s ease;
+      user-select: none;
+    }
+    #startButton:hover {
+      background: #ff3380;
+    }
+    @keyframes introFadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+    @keyframes introImagePulse {
+      0% {transform: scale(1);}
+      100% {transform: scale(1.05);}
+    }
+    @keyframes introTextPulse {
+      0% {text-shadow: 0 0 8px #ff66b2cc;}
+      100% {text-shadow: 0 0 20px #ff3380cc;}
+    }
+  </style>
+</head>
+<body>
+  <div id="introScreen">
+    <img src="cena4.png" alt="Lasanha roubada" />
+    <p>OH NÃO! A lasanha foi roubada!<br>Recupere-a antes que seja tarde!</p>
+    <button id="startButton">Começar</button>
+  </div>
+
+  <canvas id="gameCanvas" width="600" height="600" style="display:none;"></canvas>
+
+  <div id="controls" style="display:none;">
+    <button id="btnLeft" class="control-btn">◀</button>
+    <button id="btnShoot" class="control-btn">⚡</button>
+    <button id="btnRight" class="control-btn">▶</button>
+  </div>
+
+  <div id="message">Parabéns por resgatar a lasanha lendária! Agora tome seu presente 🎁</div>
+  <button id="rewardBtn">Pegue sua recompensa</button>
+
+  <script>
+    const introScreen = document.getElementById('introScreen');
+    const startButton = document.getElementById('startButton');
+    const canvas = document.getElementById("gameCanvas");
+    const controls = document.getElementById("controls");
+    const message = document.getElementById('message');
+    const rewardBtn = document.getElementById('rewardBtn');
+    const ctx = canvas.getContext("2d");
+
+    // Imagens
+    const gatoImgFechado = new Image();
+    const gatoImgAberto = new Image();
+    const inimigoImg = new Image();
+    const vidaImg = new Image();
+
+    gatoImgFechado.src = 'fechada.png';
+    gatoImgAberto.src = 'aberta.png';
+    inimigoImg.src = 'inimigo.png';
+    vidaImg.src = 'pata.png';
+
+    // Sons
+    const somTiro = new Audio('som2.mp3');
+    const somRisoInimigo = new Audio('riso.mp3');
+    const somBatalha = new Audio('som2.mp3');
+
+    somBatalha.loop = true;
+    somBatalha.volume = 0.4;
+
+    // Estado do jogo
+    let gatoX = 270, gatoY = 520;
+    let inimigoX = 250, inimigoY = 30;
+    let vidaInimigo = 23;
+    let vidas = 3;
+    let bocaAberta = false;
+
+    // Tiros e partículas
+    const tirosGato = [];
+    const tirosInimigo = [];
+    const particulas = [];
+
+    let keys = {};
+    let touchLeft = false;
+    let touchRight = false;
+
+    // Funções de controle
+    document.addEventListener('keydown', e => {
+      keys[e.key.toLowerCase()] = true;
+      if ((e.key === ' ' || e.key.toLowerCase() === 'z') && !bocaAberta) atirar();
+    });
+    document.addEventListener('keyup', e => {
+      keys[e.key.toLowerCase()] = false;
+      if (e.key === ' ' || e.key.toLowerCase() === 'z') bocaAberta = false;
+    });
+
+    // Touch buttons
+    const btnLeft = document.getElementById('btnLeft');
+    const btnRight = document.getElementById('btnRight');
+    const btnShoot = document.getElementById('btnShoot');
+
+    btnLeft.addEventListener('touchstart', e => { e.preventDefault(); touchLeft = true; });
+    btnLeft.addEventListener('touchend', e => { e.preventDefault(); touchLeft = false; });
+
+    btnRight.addEventListener('touchstart', e => { e.preventDefault(); touchRight = true; });
+    btnRight.addEventListener('touchend', e => { e.preventDefault(); touchRight = false; });
+
+    btnShoot.addEventListener('touchstart', e => {
+      e.preventDefault();
+      if (!bocaAberta) atirar();
+    });
+    btnShoot.addEventListener('touchend', e => {
+      e.preventDefault();
+      bocaAberta = false;
+    });
+
+    function atirar() {
+      bocaAberta = true;
+      somTiro.currentTime = 0;
+      somTiro.play();
+      tirosGato.push({ x: gatoX + 20, y: gatoY, vy: -10 });
+    }
+
+    function inimigoAtira() {
+      somRisoInimigo.currentTime = 0;
+      somRisoInimigo.play();
+      tirosInimigo.push({ x: inimigoX + 40, y: inimigoY + 90, vy: 7 });
+    }
+
+    // Loop de tiros inimigo
+    let inimigoTiroInterval;
+
+    function iniciarJogo() {
+      introScreen.style.display = 'none';
+      canvas.style.display = 'block';
+      controls.style.display = 'flex';
+
+      somBatalha.play().catch(() => {});
+
+      // Iniciar tiros inimigo
+      inimigoTiroInterval = setInterval(() => {
+        if (Math.random() < 0.6) inimigoAtira();
+      }, 900);
+
+      // Iniciar loop de jogo
+      loop = setInterval(gameLoop, 1000 / 30);
+    }
+
+    startButton.onclick = iniciarJogo;
+
+    // Colisão
+    function colisao(a, b) {
+      return a.x < b.x + 60 && a.x + 20 > b.x && a.y < b.y + 60 && a.y + 20 > b.y;
+    }
+
+    function criarParticulas(x, y, cor) {
+      for (let i = 0; i < 15; i++) {
+        particulas.push({
+          x: x + 10,
+          y: y + 10,
+          vx: (Math.random() - 0.5) * 5,
+          vy: (Math.random() - 0.5) * 5,
+          alpha: 1,
+          size: Math.random() * 3 + 2,
+          cor: cor
+        });
+      }
+    }
+
+    function atualizarParticulas() {
+      for (let i = particulas.length - 1; i >= 0; i--) {
+        const p = particulas[i];
+        p.x += p.vx;
+        p.y += p.vy;
+        p.alpha -= 0.03;
+        if (p.alpha <= 0) particulas.splice(i, 1);
+      }
+    }
+
+    function desenharParticulas() {
+      particulas.forEach(p => {
+        ctx.fillStyle = `rgba(${hexToRgb(p.cor)},${p.alpha})`;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+        ctx.fill();
+      });
+    }
+
+    function hexToRgb(hex) {
+      hex = hex.replace('#', '');
+      const bigint = parseInt(hex, 16);
+      const r = (bigint >> 16) & 255;
+      const g = (bigint >> 8) & 255;
+      const b = bigint & 255;
+      return `${r},${g},${b}`;
+    }
+
+    function desenharVidas() {
+      for (let i = 0; i < vidas; i++) {
+        ctx.drawImage(vidaImg, 10 + i * 35, 10, 30, 30);
+      }
+    }
+
+    function desenharVidaInimigo() {
+      ctx.fillStyle = "#ff4444";
+      ctx.fillRect(inimigoX, inimigoY - 20, 100, 12);
+      ctx.fillStyle = "#00ff00";
+      ctx.fillRect(inimigoX, inimigoY - 20, 100 * (vidaInimigo / 23), 12);
+      ctx.strokeStyle = '#000000';
+      ctx.strokeRect(inimigoX, inimigoY - 20, 100, 12);
+    }
+
+    function fimJogo(vitoria) {
+      clearInterval(loop);
+      clearInterval(inimigoTiroInterval);
+      somBatalha.pause();
+
+      if (vitoria) {
+        message.style.display = 'block';
+        rewardBtn.style.display = 'inline-block';
+
+        rewardBtn.onclick = () => {
+          alert('Recompensa coletada! Obrigado por jogar!');
+          window.location.href = 'final.html';
+        };
+      } else {
+        alert('Você perdeu! Reiniciando...');
+        location.reload();
+      }
+    }
+
+    function atualizar() {
+      if ((keys['arrowleft'] || keys['a']) || touchLeft) gatoX -= 5;
+      if ((keys['arrowright'] || keys['d']) || touchRight) gatoX += 5;
+
+      if (gatoX < 0) gatoX = 0;
+      if (gatoX > canvas.width - 60) gatoX = canvas.width - 60;
+
+      for (let i = tirosGato.length - 1; i >= 0; i--) {
+        let t = tirosGato[i];
+        t.y += t.vy;
+        if (t.y < -30) tirosGato.splice(i, 1);
+        else if (colisao(t, { x: inimigoX, y: inimigoY })) {
+          vidaInimigo--;
+          criarParticulas(t.x, t.y, '#ff88ff');
+          tirosGato.splice(i, 1);
+          if (vidaInimigo <= 0) fimJogo(true);
+        }
+      }
+
+      for (let i = tirosInimigo.length - 1; i >= 0; i--) {
+        let t = tirosInimigo[i];
+        t.y += t.vy;
+        if (t.y > canvas.height + 30) tirosInimigo.splice(i, 1);
+        else if (colisao(t, { x: gatoX, y: gatoY })) {
+          vidas--;
+          criarParticulas(t.x, t.y, '#3a7eff');
+          tirosInimigo.splice(i, 1);
+          if (vidas <= 0) fimJogo(false);
+        }
+      }
+
+      atualizarParticulas();
+    }
+
+    function desenhar() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      ctx.drawImage(inimigoImg, inimigoX, inimigoY, 100, 100);
+
+      const imgGato = bocaAberta ? gatoImgAberto : gatoImgFechado;
+      ctx.drawImage(imgGato, gatoX, gatoY, 60, 60);
+
+      tirosGato.forEach(t => {
+        ctx.fillStyle = '#ffffff';
+        ctx.beginPath();
+        ctx.arc(t.x + 10, t.y + 10, 8, 0, 2 * Math.PI);
+        ctx.fill();
+      });
+
+      tirosInimigo.forEach(t => {
+        ctx.fillStyle = '#3a7eff';
+        ctx.beginPath();
+        ctx.arc(t.x + 10, t.y + 10, 8, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      desenharVidaInimigo();
+      desenharVidas();
+      desenharParticulas();
+    }
+
+    function gameLoop() {
+      atualizar();
+      desenhar();
+    }
+
+    let loop; // interval do jogo
+
+  </script>
+</body>
+</html>

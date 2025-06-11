@@ -1,0 +1,382 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gatinho do Amor 🐱🌈</title>
+  <style>
+    html, body {
+      margin: 0; padding: 0; height: 100%;
+      font-family: Arial, sans-serif;
+      background: #ffe0f0;
+      overflow: hidden;
+    }
+
+    #background {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: url('espaco.gif') no-repeat center center;
+      background-size: cover;
+      z-index: -1;
+    }
+
+    .fade-in {
+      opacity: 0;
+      animation: fadeIn 2s forwards;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; }
+    }
+
+    .container {
+      display: flex;
+      height: 100%;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      z-index: 2;
+      position: relative;
+    }
+
+    #title {
+      font-size: 40px;
+      color: #d60087;
+      margin-bottom: 20px;
+      font-weight: bold;
+      text-shadow: 2px 2px #fff;
+    }
+
+    .scene img {
+      width: 600px;
+      height: auto;
+      max-height: 400px;
+      border-radius: 20px;
+      box-shadow: 0 0 30px #ffaad4;
+      animation: bounceIn 2s ease;
+    }
+
+    .scene p {
+      color: #d60087;
+      font-size: 22px;
+      margin-top: 10px;
+      background: rgba(255,255,255,0.9);
+      padding: 12px 24px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px #fff;
+      max-width: 700px;
+      text-align: center;
+    }
+
+    @keyframes bounceIn {
+      0% { transform: scale(0.5); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    #startGameSection {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #gameWrapper {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      background: url('quadrado_fundo.gif');
+      background-size: cover;
+      border-radius: 20px;
+    }
+
+    #game {
+      border: 4px solid #d60087;
+      border-radius: 10px;
+      background-color: transparent;
+      image-rendering: pixelated;
+    }
+
+    #score {
+      font-size: 24px;
+      color: #d60087;
+      margin: 10px 0;
+    }
+
+    #startBtn, #retryBtn {
+      background-color: #d60087;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 12px 24px;
+      font-size: 20px;
+      cursor: pointer;
+      margin-top: 20px;
+    }
+
+    #startBtn:hover, #retryBtn:hover {
+      background-color: #a5006c;
+    }
+
+    #retryBtn {
+      display: none;
+    }
+
+    /* Controles Mobile */
+    #mobileControls {
+      display: none;
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      z-index: 10;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn {
+      background-color: rgba(255, 255, 255, 0.9);
+      color: #d60087;
+      border: 2px solid #d60087;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      font-size: 24px;
+      font-weight: bold;
+      box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+      cursor: pointer;
+      transition: transform 0.1s;
+    }
+
+    .btn:active {
+      transform: scale(0.9);
+    }
+
+    @media (max-width: 768px) {
+      #mobileControls {
+        display: flex;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="background"></div>
+  <div class="container">
+    <div id="title">Gatinho e a Lasanha 🐱</div>
+    <div id="cutscene">
+      <div class="scene fade-in" id="scene1">
+        <img src="cena1.png" alt="Cena 1">
+        <p>Era uma vez um gatinho faminto que avistou uma deliciosa lasanha em cima da mesa...</p>
+      </div>
+      <div class="scene fade-in" id="scene2" style="display:none">
+        <img src="cena2.png" alt="Cena 2">
+        <p>Mas de repente, a lasanha começou a flutuar... e saiu voando para o espaço! 😱</p>
+      </div>
+      <div class="scene fade-in" id="scene3" style="display:none">
+        <img src="cena3.png" alt="Cena 3">
+        <p>Sem pensar duas vezes, o gatinho ativou seu poder arco-íris e foi atrás dela! 🚀🌈</p>
+      </div>
+    </div>
+
+    <div id="startGameSection">
+      <p style="color: #d60087; font-size: 20px; max-width: 400px; text-align: center; background: rgba(255,255,255,0.8); padding: 10px 20px; border-radius: 12px;">Ajude o gatinho a coletar todas as <strong>24 lasanhas</strong> perdidas no espaço! Use as setas ou toque nos botões para guiá-lo! 🍝</p>
+      <button id="startBtn">Iniciar Aventura!</button>
+    </div>
+
+    <div id="gameWrapper">
+      <canvas id="game"></canvas>
+      <div id="score">Pontos: 0</div>
+      <button id="retryBtn">Jogar Novamente 😺</button>
+    </div>
+  </div>
+
+  <!-- Controles Mobile -->
+  <div id="mobileControls">
+    <button class="btn" id="up">↑</button>
+    <div style="display: flex; justify-content: center; gap: 20px;">
+      <button class="btn" id="left">←</button>
+      <button class="btn" id="down">↓</button>
+      <button class="btn" id="right">→</button>
+    </div>
+  </div>
+
+  <audio id="sound-eat" src="comendo.mp3" preload="auto"></audio>
+  <audio id="bg-music" src="jogo1.mp3" preload="auto" loop></audio>
+
+  <script>
+    const scenes = ["scene1", "scene2", "scene3"];
+    let currentScene = 0;
+
+    function nextScene() {
+      if (currentScene < scenes.length - 1) {
+        document.getElementById(scenes[currentScene]).style.display = "none";
+        currentScene++;
+        document.getElementById(scenes[currentScene]).style.display = "block";
+      } else {
+        document.getElementById("cutscene").style.display = "none";
+        document.getElementById("startGameSection").style.display = "flex";
+      }
+    }
+
+    scenes.forEach((id, index) => {
+      if (index !== 0) document.getElementById(id).style.display = "none";
+    });
+
+    setTimeout(nextScene, 6000);
+    setTimeout(nextScene, 12000);
+    setTimeout(nextScene, 18000);
+
+    const canvas = document.getElementById('game');
+    const ctx = canvas.getContext('2d');
+    const scoreDisplay = document.getElementById('score');
+    const startBtn = document.getElementById('startBtn');
+    const retryBtn = document.getElementById('retryBtn');
+    const soundEat = document.getElementById('sound-eat');
+    const bgMusic = document.getElementById('bg-music');
+
+    const maxBoxes = 20;
+    let box = Math.min(window.innerWidth - 100, 500) / maxBoxes;
+    canvas.width = box * maxBoxes;
+    canvas.height = box * maxBoxes;
+
+    const images = {
+      gatoFechado: new Image(),
+      gatoAberto: new Image(),
+      maca: new Image(),
+      arcoiris: new Image(),
+    };
+
+    images.gatoFechado.src = 'fechada.png';
+    images.gatoAberto.src = 'aberta.png';
+    images.maca.src = 'lasanha.png';
+    images.arcoiris.src = 'arcoiris.gif';
+
+    let snake = [];
+    let direction = null;
+    let food = {};
+    let score = 0;
+    let gameInterval;
+
+    function randomFood() {
+      let position;
+      do {
+        position = {
+          x: Math.floor(Math.random() * maxBoxes) * box,
+          y: Math.floor(Math.random() * maxBoxes) * box,
+        };
+      } while (snake.some(part => part.x === position.x && part.y === position.y));
+      return position;
+    }
+
+    document.addEventListener('keydown', e => {
+      const key = e.key.toLowerCase();
+      if ((e.key === 'ArrowLeft' || key === 'a') && direction !== 'RIGHT') direction = 'LEFT';
+      else if ((e.key === 'ArrowUp' || key === 'w') && direction !== 'DOWN') direction = 'UP';
+      else if ((e.key === 'ArrowRight' || key === 'd') && direction !== 'LEFT') direction = 'RIGHT';
+      else if ((e.key === 'ArrowDown' || key === 's') && direction !== 'UP') direction = 'DOWN';
+    });
+
+    // Controles Mobile
+    document.getElementById("up").addEventListener("click", () => {
+      if (direction !== 'DOWN') direction = 'UP';
+    });
+    document.getElementById("down").addEventListener("click", () => {
+      if (direction !== 'UP') direction = 'DOWN';
+    });
+    document.getElementById("left").addEventListener("click", () => {
+      if (direction !== 'RIGHT') direction = 'LEFT';
+    });
+    document.getElementById("right").addEventListener("click", () => {
+      if (direction !== 'LEFT') direction = 'RIGHT';
+    });
+
+    function collision(newHead, body) {
+      return body.some(part => part.x === newHead.x && part.y === newHead.y);
+    }
+
+    function isNearFood(head, food) {
+      const dx = Math.abs(head.x - food.x);
+      const dy = Math.abs(head.y - food.y);
+      return dx <= box && dy <= box;
+    }
+
+    function endGame(message) {
+      clearInterval(gameInterval);
+      bgMusic.pause();
+      alert(message);
+      retryBtn.style.display = 'inline-block';
+    }
+
+    function gameLoop() {
+      if (!direction) return;
+
+      let head = { ...snake[0] };
+      if (direction === 'LEFT') head.x -= box;
+      else if (direction === 'UP') head.y -= box;
+      else if (direction === 'RIGHT') head.x += box;
+      else if (direction === 'DOWN') head.y += box;
+
+      if (head.x < 0) head.x = (maxBoxes - 1) * box;
+      if (head.x >= canvas.width) head.x = 0;
+      if (head.y < 0) head.y = (maxBoxes - 1) * box;
+      if (head.y >= canvas.height) head.y = 0;
+
+      if (collision(head, snake)) {
+        endGame("Você perdeu! Tente novamente 😿");
+        return;
+      }
+
+      const ate = head.x === food.x && head.y === food.y;
+      if (ate) {
+        score++;
+        scoreDisplay.textContent = 'Pontos: ' + score;
+        soundEat.currentTime = 0;
+        soundEat.play();
+        food = randomFood();
+        snake.push({});
+        if (score >= 24) {
+          clearInterval(gameInterval);
+          alert('Você venceu! Preparando próxima fase...');
+          window.location.href = "fase2.html";
+        }
+      }
+
+      for (let i = snake.length - 1; i > 0; i--) {
+        snake[i] = { ...snake[i - 1] };
+      }
+      snake[0] = head;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Desenha o arco-íris atrás do gato
+      for (let i = snake.length - 1; i > 0; i--) {
+        const part = snake[i];
+        ctx.drawImage(images.arcoiris, part.x, part.y, box, box);
+      }
+
+      ctx.drawImage(images.maca, food.x, food.y, box * 1.2, box * 1.2);
+      const near = isNearFood(head, food);
+      ctx.drawImage(near ? images.gatoAberto : images.gatoFechado, head.x, head.y, box * 1.4, box * 1.4);
+    }
+
+    function startGame() {
+      document.getElementById("startGameSection").style.display = "none";
+      document.getElementById("gameWrapper").style.display = "flex";
+      retryBtn.style.display = 'none';
+
+      snake = [{ x: 9 * box, y: 10 * box }];
+      direction = null;
+      food = randomFood();
+      score = 0;
+      scoreDisplay.textContent = 'Pontos: 0';
+
+      bgMusic.currentTime = 0;
+      bgMusic.play();
+      gameInterval = setInterval(gameLoop, 120);
+    }
+
+    startBtn.addEventListener('click', startGame);
+    retryBtn.addEventListener('click', startGame);
+  </script>
+</body>
+</html>

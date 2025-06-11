@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Pedido Especial</title>
+  <style>
+    body {
+      background-color: pink;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      color: #d60087;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    #container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #mensagem {
+      display: none;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+
+    p {
+      font-size: 1.4rem;
+      margin-top: 1rem;
+    }
+
+    a {
+      color: #ff1493;
+      text-decoration: none;
+      font-weight: bold;
+      display: block;
+      margin-top: 2rem;
+      font-size: 1.2rem;
+    }
+
+    #mostrarBtn {
+      background-color: #d60087;
+      color: white;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 12px;
+      font-size: 1.2rem;
+      cursor: pointer;
+      transition: background 0.3s;
+    }
+
+    #mostrarBtn:hover {
+      background-color: #a5006c;
+    }
+  </style>
+</head>
+<body>
+  <div id="container">
+    <audio id="bg-music" src="final.mp3" preload="auto" loop></audio>
+
+    <button id="mostrarBtn">Clique para ver a surpresa 💖</button>
+
+    <div id="mensagem">
+      <h1>Você é a coisa mais incrível que poderia me acontecer. Fiz isso tudo por ti, amor, por você ser incrível. Então a pergunta que não quer calar: você quer namorar comigo, bb? 💖</h1>
+      <p>Obrigado por jogar e chegar até aqui! ❤️</p>
+      <a href="menu.html">Voltar ao menu</a>
+    </div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('mostrarBtn');
+    const mensagem = document.getElementById('mensagem');
+    const musica = document.getElementById('bg-music');
+
+    btn.addEventListener('click', () => {
+      musica.volume = 0.5;
+      musica.play().catch(err => console.log('Erro ao reproduzir:', err));
+      btn.style.display = 'none';
+      mensagem.style.display = 'block';
+    });
+  </script>
+</body>
+</html>
